@@ -1,5 +1,6 @@
 import { Database } from "bun:sqlite";
 import { z } from "zod";
+import os from "os";
 
 const db = new Database("db.sqlite", { create: true });
 
@@ -19,6 +20,8 @@ Bun.serve({
   async fetch(req) {
     const url = new URL(req.url);
     const { method } = req;
+
+    const name = os.hostname();
 
     if (url) {
       const { pathname } = url;
@@ -71,7 +74,15 @@ Bun.serve({
       if (method === "GET") {
         // GET /api
         if (pathname === "/api") {
-          return new Response(JSON.stringify({ message: "Hello world! ✨" }));
+          return new Response(
+            JSON.stringify({ message: "Hello world! ✨", server: name }),
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              status: 200,
+            }
+          );
         }
 
         /**

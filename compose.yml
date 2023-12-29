@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+  api:
+    image: bun-api:latest
+    expose:
+      - "8080/tcp"
+    labels:
+      - "traefik.http.routers.bun-api.rule=Host(`api.localhost`)"
+    deploy:
+      replicas: 6
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: any
+        delay: 5s
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.10
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker=true --entryPoints.web.address=:80 --entryPoints.websecure.address=:443
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
